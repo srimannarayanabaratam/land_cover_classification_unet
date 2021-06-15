@@ -9,4 +9,4 @@ checkpoints/*
 README.md
 submit.py
 .ipynb_checkpoints/*
-
+.idea/*

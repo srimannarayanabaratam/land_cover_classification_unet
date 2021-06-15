@@ -1,0 +1,8 @@
+matplotlib~=3.4.2
+numpy~=1.20.3
+Pillow~=8.2.0
+torch
+torchvision
+tensorboard
+future
+tqdm~=4.61.0

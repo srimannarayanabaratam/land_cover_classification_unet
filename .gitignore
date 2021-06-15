@@ -1,0 +1,12 @@
+INTERRUPTED.pth
+__pycache__/*
+data/imgs_/*
+data/masks_/*
+runs/*
+!runs/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+README.md
+submit.py
+.ipynb_checkpoints/*
+.idea/*

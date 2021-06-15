@@ -36,9 +36,9 @@ The following flags can be used while training the model.
 
 <ins>_Example:_<ins/>
 
-Training the model for 100 epochs using 20% of the data as a validation split, learning rate is 1x10^-5, batch size is 2 and image scale is 20%
+Training the model for 100 epochs using 20% of the data as a validation split, learning rate is 4x10^-5, batch size is 2 and image scale is 20%
 
-`!python3 train.py -e 100 -v 20.0 -l 1e-5 -b 2 -s 0.2`
+`!python3 train.py -e 100 -v 20.0 -l 4e-5 -b 2 -s 0.2`
 
 ## Prediction
 <ins>_Guidelines_<ins>

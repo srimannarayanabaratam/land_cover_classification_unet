@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-img_dir = "data/masks_"  # Enter Directory of all images
-# print(os.listdir(img_dir))
+img_dir = "data/training_data"  # Enter Directory of all images
 data_path = os.path.join(img_dir, '*g')
 files = glob.glob(data_path)
 data = []

@@ -1,6 +1,6 @@
 ﻿# Satellite Image Land Cover Segmentation using U-net 
 
-This GitHub repository is developed as a part of Computer Vision by Deep Learning (CS4245) course offered at TU Delft. The implementation of the code was done using PyTorch, it uses U-net architecture to perform multi-class semantic segmentation.  The repository from which our implementation has been derived can be found [[here]](https://github.com/milesial/Pytorch-UNet).
+This GitHub repository is developed as a part of Computer Vision by Deep Learning (CS4245) course offered at TU Delft. The implementation of the code was done using PyTorch, it uses U-net architecture to perform multi-class semantic segmentation.  The repository from which our implementation has been derived can be found [[here]](https://github.com/milesial/Pytorch-UNet). A well articulated blog is also available (here) for the project by the authors of this repository.
 
 ## Dataset
 The dataset we used is taken from the DeepGlobe Challenge of Land Cover Segmentation in 2018. [[DeepGlobeChallenges]](http://deepglobe.org/challenge.html)  However, the server for the challenge is no longer available for submission and evaluation of solutions. [[DeepGlobe2018 Server]](https://competitions.codalab.org/competitions/18468) and the validation and test set are not accompanied by labels. For this reason we are using **only the training set**  of the challenge and we are further splitting it into validation and test set to be able to evaluate our solution.  The original dataset can be downloaded from Kaggle [[DeepGLobe2018 Original Dataset]](https://www.kaggle.com/balraj98/deepglobe-land-cover-classification-dataset) here and the dataset we use can be downloaded from [[GoogleDrive Link for our Dataset]](__) separated into the training/validation and test set we used for our model. The actual dataset can be found heare 
@@ -19,7 +19,8 @@ In this section we will present the different files inside the repository as wel
 |`distribution.py`| Used to evaluate the pixel numbers of the validation and training set and visualize them via  bar chart.|
 |`dataset.py`| Used as a data loader during the training phase.|
 
-
+## Google Colab Wrapper
+For testing the repository, a google colab wrapper is also provided which explains in detail how to execute the code along with insights.
 
 ## Training
 
@@ -58,7 +59,7 @@ Making a prediction on the full test set dataset using 30 epoch model trained on
 
 ```
 %%time
-!python predict.py -m data/checkpoints2/model_ep30_full_data.pth -i data/test_set_full_set/img_test/* -o preds_new1/ -s 0.2 --viz
+!python predict.py -m data/checkpoints/model_ep30_full_data.pth -i data/<test_set_directory>/* -o preictions/ -s 0.2 --viz
 ```
 
 

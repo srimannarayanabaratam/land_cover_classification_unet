@@ -4,7 +4,6 @@ data/imgs_/*
 data/masks_/*
 runs/*
 !runs/.gitkeep
-checkpoints/*
 !checkpoints/.gitkeep
 README.md
 submit.py

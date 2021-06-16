@@ -20,7 +20,7 @@ In this section we will present the different files inside the repository as wel
 |`dataset.py`| Used as a data loader during the training phase.|
 
 ## Google Colab Wrapper
-For testing the repository, a google colab wrapper is also provided which explains in detail how to execute the code along with insights.
+For testing the repository, a google colab wrapper is also provided which explains in detail how to execute the code along with insights. Just download the "colab_wrapper.ipynb" file from the repository and open in your colab. Instructions are available there to clone this repository directly to your drive and train using GPU runtime.
 
 ## Training
 

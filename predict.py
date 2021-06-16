@@ -50,35 +50,15 @@ def predict_img(net,
                    5: (255, 255, 255),     #barren_land
                    6: (0  , 0  , 0  )}     #unknown
         class_idx = torch.argmax(probs, dim=0)
-        # print(class_idx.shape)
         image = torch.zeros(height, width, 3, dtype=torch.uint8)
-        # mask_indices = torch.zeros(height, width, 1, dtype=torch.uint8)
-        # print(torch.unique(class_idx))
 
         for k in mapping:
           
           idx = (class_idx == torch.tensor(k, dtype=torch.uint8))
           validx = (idx == 1)
           image[validx,:] = torch.tensor(mapping[k], dtype=torch.uint8)
-         
-        
+                 
         image = image.permute(2, 0, 1)
-        # mask_indices = mask_indices.permute(2, 0, 1)
-        # print(mask_indices.shape)
-        # print(((mask_indices==1).sum(0,1)).shape)
-        # mask
-        # np_array=mask_indices.numpy()
-        # count0=np.count_nonzero(np_array==0)
-        # count1=np.count_nonzero(np_array==1)
-        # count2=np.count_nonzero(np_array==2)
-        # count3=np.count_nonzero(np_array==3)
-        # count4=np.count_nonzero(np_array==4)
-        # count5=np.count_nonzero(np_array==5)
-        # count6=np.count_nonzero(np_array==6)
-        # print(count0,count1,count2,count3,count4,count5,count6)
-        # print(image.shape)
-
-        ###################################################
 
         tf = transforms.Compose(
             [
@@ -88,10 +68,6 @@ def predict_img(net,
             ]
         )
 
-        # probs = tf(probs.cpu())
-        # full_mask = probs.squeeze().cpu().numpy()
-
-        # image = tf(image.cpu())
         image = image.permute(1,2,0)
         image = image.squeeze().cpu().numpy()
 
@@ -150,11 +126,7 @@ def RGB_2_class_idx(mask_to_be_converted):
 
     temp = np.array(mask_to_be_converted)
     temp = np.where(temp>=128, 255, 0)
-    # print(mask_to_be_converted[0,:,0,0])
     class_mask=torch.from_numpy(temp)
-    # print(class_mask.shape)
-    # exit()
-    # print(class_mask.size())
     h, w = mask_to_be_converted.shape[2], mask_to_be_converted.shape[3]
     img_no=mask_to_be_converted.shape[0]
     mask_out = torch.zeros(img_no,h, w, dtype=torch.long)
@@ -163,13 +135,11 @@ def RGB_2_class_idx(mask_to_be_converted):
     for j in range (img_no):
       class_index=0
       for k in mapping:
-        # print(class_mask[j,:,:,:])
         idx = (class_mask[j,:,:,:] == torch.tensor(k, dtype=torch.uint8).unsqueeze(1).unsqueeze(2))
         validx = (idx.sum(0) == 3)
         temp=mask_out[j,:,:]      
         temp[validx]=class_index
         mask_out[j,:,:]=temp
-        # mask_out[j,:,:]=torch.where(validx==True,mask_out[j,:,:],class_index)        
         class_index+=1
     
     return mask_out
@@ -200,49 +170,34 @@ def compute_iou(predicted, actual,num_calsses):
         intersection = 0
         union = 0
         iou=np.zeros((num_calsses-1),dtype=float)
-        # print(iou)
         for k in range(num_calsses-1):
             a = (predicted == k).int()
             b = (actual == k).int()
-            #if torch.sum(a) < 100:
-            #    continue # Don't count if the channel doesn't cover enough
             intersection = torch.sum(torch.mul(a, b))
             union        = torch.sum(((a + b) > 0).int())
             iou[k]=intersection/union
-        # print(iou)
         mean_iou=(1/(num_calsses-1))*np.sum(iou)
-        # print(mean_iou)
         return mean_iou
 
 
 if __name__ == "__main__":
     args = get_args()
     in_files = args.input
-    # print(args.input)
     
     img_scale=args.scale
     dir_mask='data/test_set_full_set/masks_test/'
     # dir_mask='data/masks_subset/'
     # dir_img='data/test_set_full_set/img_test/'
     gt_list=[]
-
-    # print(glob.glob(dir_mask+'*.png'))
     mask_dirs=sorted( filter( os.path.isfile, glob.glob(dir_mask+'*') ) )
-    # print(mask_dirs)
-    # j=0
+
     for filename in mask_dirs:
         mask = Image.open(filename)
         resized_mask=preprocess_mask(mask, img_scale)      
         mask=np.asarray(resized_mask)     
-        gt_list.append(mask)
-
-        # if j==3:
-        #   break
-        # j=j+1
-        
+        gt_list.append(mask)     
     
     gt_tensor=torch.Tensor(gt_list)
-    # print(gt_tensor.shape)
     net = UNet(n_channels=3, n_classes=7)
 
     logging.info("Loading model {}".format(args.model))
@@ -255,16 +210,11 @@ if __name__ == "__main__":
 
     logging.info("Model loaded !")
     
-    # seg_predictions = []
-    # test_data = datasets.ImageFolder(, transform=None)
-
-
     for i, fn in enumerate(in_files):
         logging.info("\nPredicting image {} ...".format(fn))
 
         img = Image.open(fn)
         
-          
         #Splitting input directory from the file name
         name=fn.split('/')[-1]
         #Removing the file extension
@@ -275,33 +225,19 @@ if __name__ == "__main__":
                            out_threshold=args.mask_threshold,
                            device=device)
         
-
         if i==0:
           seg_array=mask_indices.unsqueeze(0)
         else:
           seg_array=torch.cat((seg_array,mask_indices.unsqueeze(0)),0)
 
-        # if not args.no_save:
-        #     out_fn = out_files[i]
-        #     result = mask_to_image(mask)
-        #     result.save(out_files[i])
-
-        #     logging.info("Mask saved to {}".format(out_files[i]))
-
         if args.viz:
           im = Image.fromarray(seg)
-          # print(args.output[0])
           im.save(str(args.output[0])+'pred_'+name+'.jpeg')
-        # if i==3:
-        #   break
-        #     logging.info("Visualizing results for image {}, close to continue ...".format(fn))
-        #     plot_img_and_mask(img, mask)
 
 
-    # seg_array=seg_array.permute(0,3,1,2)
+    #Metric Evaluation 
     gt_tensor=RGB_2_class_idx(gt_tensor)
     num_calsses=7
-    # print(seg_array.shape)
     total_IoU = compute_iou(seg_array, gt_tensor,num_calsses=7)
     
     print("IoU Value:",total_IoU)

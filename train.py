@@ -60,9 +60,10 @@ def train_net(net,
         Images scaling:  {img_scale}
     ''')
 
-    # optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
-    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
+
     optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=1e-8)
+    
+    ## Uncomment the below lines if optimal learning rate technique is to be found as explained in the blog
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer= optimizer, gamma= 0.96) 
     # lambda1 = lambda epoch: 1.04 ** epoch
     # scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda= lambda1)
@@ -70,8 +71,7 @@ def train_net(net,
     weights_classes = torch.from_numpy(classcount(train_loader))
     weights_classes = weights_classes.to(device=device, dtype=torch.float32)
 
-
-    print(weights_classes)
+    print("Class Distribution", weights_classes)
 
     if net.n_classes > 1:
         criterion = nn.CrossEntropyLoss(weight = weights_classes)
@@ -99,13 +99,10 @@ def train_net(net,
                 mask_type = torch.float32 if net.n_classes == 1 else torch.long ## For cross entropy loss
                 # mask_type = torch.float32 if net.n_classes == 1 else torch.float ## For Dice Loss
                 true_masks = true_masks.to(device=device, dtype=mask_type)
-
-                # for name, param in net.named_parameters():
-                #   print(name, param.grad)
-                  
+                 
                 masks_pred = net(imgs)
                 
-                # convert the prediction to float32 for avoiding nan in loss
+                # convert the prediction to float32 for avoiding nan in loss calculation
                 masks_pred = masks_pred.type(torch.float32)
 
                 ## Cross Entropy Loss
@@ -116,8 +113,6 @@ def train_net(net,
                 # loss=dice_coef_9cat_loss(true_masks,masks_pred)
                 # epoch_loss += loss.item()
 
-                # writer.add_scalar('Loss/train', loss.item(), global_step)
-                # pbar.set_postfix(**{'loss (batch)': loss.item()})
                 pbar.set_postfix(**{'Epoch Loss': epoch_loss/n_train})
 
                 # convert model to full precision for optimization of weights
@@ -138,11 +133,6 @@ def train_net(net,
                   # scheduler.step()
                   pseudo_batch_loss = 0 
 
-                # for name, param in net.named_parameters():
-                  # print(name, param.grad)
-
-                # if global_step % (n_train // (1 * batch_size)) == 0:
-                # if  True:
         writer.add_scalar('Loss/train', epoch_loss/n_train, epoch+1)
 
         for tag, value in net.named_parameters():
@@ -151,8 +141,7 @@ def train_net(net,
             writer.add_histogram('grads/' + tag, value.grad.data.cpu().numpy(), epoch+1)
         
         val_score = eval_net(net, val_loader, device)
-        # print(val_score)
-        
+
         # if (epoch+1) % 10 == 0:
             # scheduler.step()
         
@@ -171,7 +160,6 @@ def train_net(net,
             writer.add_images('masks/pred', torch.sigmoid(masks_pred) > 0.5, epoch+1)
         
 
-        # print((epoch+1)%10)
         if (epoch+1) % 5 == 0:
             if save_cp:
                 try:
@@ -182,20 +170,6 @@ def train_net(net,
                 torch.save(net.state_dict(),
                            dir_checkpoint + f'CP_epoch{epoch + 1}.pth')
                 logging.info(f'Checkpoint {epoch + 1} saved !')
-
-        
-        # print("Epoch %d Training Dice Loss: %.14f" %(epoch+1, epoch_loss/n_train))
-    # writer.close()
-    # if save_cp:
-    #   try:
-    #       os.mkdir(dir_checkpoint)
-    #       logging.info('Created checkpoint directory')
-    #   except OSError:
-    #       pass
-    #   torch.save(net.state_dict(),
-    #               dir_checkpoint + f'CP_epoch{epoch + 1}.pth')
-    #   logging.info(f'Checkpoint {epoch + 1} saved !')
-
 
 
 def get_args():

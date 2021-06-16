@@ -20,12 +20,14 @@ from classcount import classcount
 
 torch.autograd.set_detect_anomaly(True)
 
-# dir_img = 'data/img_subset/'
-# dir_mask = 'data/masks_subset/'
-# dir_checkpoint = 'data/checkpoints2/'
+# Comment/Uncomment to toggle subset for training
+dir_img = 'data/img_subset/'
+dir_mask = 'data/masks_subset/'
 
-dir_img = 'data/imgs_/'
-dir_mask = 'data/masks_/'
+## Comment/Uncomment to toggle subset for training
+# dir_img = 'data/training_data/images'
+# dir_mask = 'data/training_data/masks'
+
 dir_checkpoint = 'checkpoints/'
 
 def train_net(net,

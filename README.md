@@ -59,7 +59,7 @@ Making a prediction on the full test set dataset using 30 epoch model trained on
 
 ```
 %%time
-!python predict.py -m data/checkpoints/model_ep30_full_data.pth -i data/<test_set_directory>/* -o preictions/ -s 0.2 --viz
+!python predict.py -m data/checkpoints/model_ep30_full_data.pth -i data/<test_set_directory>/* -o predictions/ -s 0.2 --viz
 ```
 
 

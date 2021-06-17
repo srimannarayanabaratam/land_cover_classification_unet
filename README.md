@@ -28,12 +28,12 @@ The following flags can be used while training the model.
 
 <ins>_Guidelines_<ins>
 
-`-f` : Used to load a model already stored in memory./
-`-e` : Used to specify the Number of training epochs./
-`-l` : Used to specify the learning rate to be used for training./
-`-b` : Used to specify the batch size./
-`-v` : Used to specify the percentage of the validation split (1-100)./
-`-s` : Used to specify the scale of the image to be used for training./
+`-f` : Used to load a model already stored in memory.//
+`-e` : Used to specify the Number of training epochs.//
+`-l` : Used to specify the learning rate to be used for training.//
+`-b` : Used to specify the batch size.//
+`-v` : Used to specify the percentage of the validation split (1-100).//
+`-s` : Used to specify the scale of the image to be used for training.//
 
 <ins>_Example:_<ins/>
 

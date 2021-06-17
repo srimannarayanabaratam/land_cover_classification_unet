@@ -28,12 +28,12 @@ The following flags can be used while training the model.
 
 <ins>_Guidelines_<ins>
 
-`-f` : Used to load a model already stored in memory.\\
-`-e` : Used to specify the Number of training epochs.\\
-`-l` : Used to specify the learning rate to be used for training.\\
-`-b` : Used to specify the batch size.\\
-`-v` : Used to specify the percentage of the validation split (1-100).\\
-`-s` : Used to specify the scale of the image to be used for training.\\
+`-f` : Used to load a model already stored in memory. \
+`-e` : Used to specify the Number of training epochs. \
+`-l` : Used to specify the learning rate to be used for training. \
+`-b` : Used to specify the batch size. \
+`-v` : Used to specify the percentage of the validation split (1-100). \
+`-s` : Used to specify the scale of the image to be used for training. \
 
 <ins>_Example:_<ins/>
 
@@ -44,11 +44,11 @@ Training the model for 100 epochs using 20% of the data as a validation split, l
 ## Prediction
 <ins>_Guidelines_<ins>
 
-`-m` : Used to specify the directory to the model.
-`-i` : Used to specify the directory of the images to test the model on.
-`-o` : Used to specify the directory in which the predictions will be outputted.
-`-s` : Used to specify the scale of the images to be used for predictions.
-`--viz:` Saves the predictions in the form of an image.
+`-m` : Used to specify the directory to the model. \
+`-i` : Used to specify the directory of the images to test the model on. \
+`-o` : Used to specify the directory in which the predictions will be outputted. \
+`-s` : Used to specify the scale of the images to be used for predictions. \
+`--viz:` Saves the predictions in the form of an image. \
 (For best results used the same scale you used for training the model)
 
 _Note:_ Inference of scale 0.2 takes approximately 10 minutes.

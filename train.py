@@ -63,8 +63,10 @@ def train_net(net,
 
     optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=1e-8)
     
-    ## Uncomment the below lines if optimal learning rate technique is to be found as explained in the blog
+    ## Uncomment to use an exponential scheduler
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer= optimizer, gamma= 0.96) 
+    
+    ## Uncomment the below lines if optimal learning rate technique is to be found as explained in the blog
     # lambda1 = lambda epoch: 1.04 ** epoch
     # scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda= lambda1)
 

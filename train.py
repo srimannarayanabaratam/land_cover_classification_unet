@@ -30,6 +30,7 @@ dir_mask = 'data/masks_subset/'
 
 dir_checkpoint = 'checkpoints/'
 
+
 def train_net(net,
               device,
               epochs=5,
@@ -38,11 +39,10 @@ def train_net(net,
               val_percent=0.1,
               save_cp=True,
               img_scale=0.5):
-
     dataset = BasicDataset(dir_img, dir_mask, img_scale)
     n_val = int(len(dataset) * val_percent)
     n_train = len(dataset) - n_val
-    train, val = random_split(dataset, [n_train, n_val],generator=torch.Generator().manual_seed(42))
+    train, val = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(42))
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     val_loader = DataLoader(val, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True, drop_last=True)
 
@@ -60,12 +60,11 @@ def train_net(net,
         Images scaling:  {img_scale}
     ''')
 
-
     optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=1e-8)
-    
+
     ## Uncomment to use an exponential scheduler
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer= optimizer, gamma= 0.96) 
-    
+
     ## Uncomment the below lines if optimal learning rate technique is to be found as explained in the blog
     # lambda1 = lambda epoch: 1.04 ** epoch
     # scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda= lambda1)
@@ -76,20 +75,20 @@ def train_net(net,
     print("Class Distribution", weights_classes)
 
     if net.n_classes > 1:
-        criterion = nn.CrossEntropyLoss(weight = weights_classes)
+        criterion = nn.CrossEntropyLoss(weight=weights_classes)
     else:
         criterion = nn.BCEWithLogitsLoss()
-    
+
     for epoch in range(epochs):
         net.train()
 
         epoch_loss = 0
-        pseudo_batch_loss=0 ##remove when not pruning for lr
+        pseudo_batch_loss = 0  ##remove when not pruning for lr
         with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 # Use half precision model for training
-                # net.half()
-                
+                net.half()
+
                 imgs = batch['image']
                 true_masks = batch['mask']
                 assert imgs.shape[1] == net.n_channels, \
@@ -97,13 +96,14 @@ def train_net(net,
                     f'but loaded images have {imgs.shape[1]} channels. Please check that ' \
                     'the images are loaded correctly.'
 
-                imgs = imgs.to(device=device, dtype=torch.float16)
-                mask_type = torch.float32 if net.n_classes == 1 else torch.long ## For cross entropy loss
+                # imgs = imgs.to(device=device, dtype=torch.float16)
+                imgs = imgs.to(device=device)
+                mask_type = torch.float32 if net.n_classes == 1 else torch.long  ## For cross entropy loss
                 # mask_type = torch.float32 if net.n_classes == 1 else torch.float ## For Dice Loss
                 true_masks = true_masks.to(device=device, dtype=mask_type)
-                 
+
                 masks_pred = net(imgs)
-                
+
                 # convert the prediction to float32 for avoiding nan in loss calculation
                 masks_pred = masks_pred.type(torch.float32)
 
@@ -115,7 +115,7 @@ def train_net(net,
                 # loss=dice_coef_9cat_loss(true_masks,masks_pred)
                 # epoch_loss += loss.item()
 
-                pbar.set_postfix(**{'Epoch Loss': epoch_loss/n_train})
+                pbar.set_postfix(**{'Epoch Loss': epoch_loss / n_train})
 
                 # convert model to full precision for optimization of weights
                 net.float()
@@ -129,40 +129,39 @@ def train_net(net,
 
                 pseudo_batch_loss += loss.item()
 
-                if (global_step) % 16 == 0: 
-                  writer.add_scalar('Batch Loss/train',pseudo_batch_loss, global_step)
-                  # writer.add_scalar('learning_rate', optimizer.param_groups[0]['lr'], global_step)
-                  # scheduler.step()
-                  pseudo_batch_loss = 0 
+                if (global_step) % 16 == 0:
+                    writer.add_scalar('Batch Loss/train', pseudo_batch_loss, global_step)
+                    # writer.add_scalar('learning_rate', optimizer.param_groups[0]['lr'], global_step)
+                    # scheduler.step()
+                    pseudo_batch_loss = 0
 
-        writer.add_scalar('Loss/train', epoch_loss/n_train, epoch+1)
+        writer.add_scalar('Loss/train', epoch_loss / n_train, epoch + 1)
 
         for tag, value in net.named_parameters():
             tag = tag.replace('.', '/')
-            writer.add_histogram('weights/' + tag, value.data.cpu().numpy(), epoch+1)
-            writer.add_histogram('grads/' + tag, value.grad.data.cpu().numpy(), epoch+1)
-        
+            writer.add_histogram('weights/' + tag, value.data.cpu().numpy(), epoch + 1)
+            writer.add_histogram('grads/' + tag, value.grad.data.cpu().numpy(), epoch + 1)
+
         val_score = eval_net(net, val_loader, device)
 
         # if (epoch+1) % 10 == 0:
-            # scheduler.step()
-        
+        # scheduler.step()
+
         # writer.add_scalar('learning_rate', optimizer.param_groups[0]['lr'], epoch+1)
 
         if net.n_classes > 1:
             logging.info('Validation CE Loss: {}'.format(val_score))
-            writer.add_scalar('Loss/test', val_score, epoch+1)
+            writer.add_scalar('Loss/test', val_score, epoch + 1)
         else:
             logging.info('Validation Dice Coeff: {}'.format(val_score))
-            writer.add_scalar('Dice/test', val_score, epoch+1)
+            writer.add_scalar('Dice/test', val_score, epoch + 1)
 
-        writer.add_images('images', imgs, epoch+1)
+        writer.add_images('images', imgs, epoch + 1)
         if net.n_classes == 1:
-            writer.add_images('masks/true', true_masks, epoch+1)
-            writer.add_images('masks/pred', torch.sigmoid(masks_pred) > 0.5, epoch+1)
-        
+            writer.add_images('masks/true', true_masks, epoch + 1)
+            writer.add_images('masks/pred', torch.sigmoid(masks_pred) > 0.5, epoch + 1)
 
-        if (epoch+1) % 5 == 0:
+        if (epoch + 1) % 5 == 0:
             if save_cp:
                 try:
                     os.mkdir(dir_checkpoint)
@@ -192,6 +191,7 @@ def get_args():
 
     return parser.parse_args()
 
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     args = get_args()
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     #   - For 2 classes, use n_classes=1
     #   - For N > 2 classes, use n_classes=N
     net = UNet(n_channels=3, n_classes=7, bilinear=True)
-    
+
     logging.info(f'Network:\n'
                  f'\t{net.n_channels} input channels\n'
                  f'\t{net.n_classes} output channels (classes)\n'

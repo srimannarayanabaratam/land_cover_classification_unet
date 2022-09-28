@@ -88,7 +88,7 @@ def train_net(net,
         with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 # Use half precision model for training
-                net.half()
+                # net.half()
                 
                 imgs = batch['image']
                 true_masks = batch['mask']

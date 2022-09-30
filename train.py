@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import sys
-
+import wandb
 import numpy as np
 import torch
 import torch.nn as nn
@@ -30,7 +30,7 @@ dir_mask = 'data/masks_subset/'
 
 dir_checkpoint = 'checkpoints/'
 
-
+tags = ['train/loss','validation/loss']
 def train_net(net,
               device,
               epochs=5,
@@ -114,7 +114,7 @@ def train_net(net,
                 ## Dice Loss
                 # loss=dice_coef_9cat_loss(true_masks,masks_pred)
                 # epoch_loss += loss.item()
-
+                mean_epoch_loss= epoch_loss / n_train
                 pbar.set_postfix(**{'Epoch Loss': epoch_loss / n_train})
 
                 # convert model to full precision for optimization of weights
@@ -134,6 +134,14 @@ def train_net(net,
                     # writer.add_scalar('learning_rate', optimizer.param_groups[0]['lr'], global_step)
                     # scheduler.step()
                     pseudo_batch_loss = 0
+
+            #end of batch
+            wandb.log({"train/batch_loss":loss})
+        wandb.log({"train/epoch_loss": mean_epoch_loss})
+        #end of epoch
+
+        tags = ['train/loss', 'validation/loss',
+                'validation/dice_coeff']
 
         writer.add_scalar('Loss/train', epoch_loss / n_train, epoch + 1)
 
@@ -155,6 +163,9 @@ def train_net(net,
         else:
             logging.info('Validation Dice Coeff: {}'.format(val_score))
             writer.add_scalar('Dice/test', val_score, epoch + 1)
+
+        for x, tag in zip(list())
+
 
         writer.add_images('images', imgs, epoch + 1)
         if net.n_classes == 1:

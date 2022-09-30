@@ -17,6 +17,7 @@ from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 from diceloss import dice_coef_9cat_loss
 from classcount import classcount
+from utils.logging.wandb_logging import Wandblogger
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -78,7 +79,8 @@ def train_net(net,
         criterion = nn.CrossEntropyLoss(weight=weights_classes)
     else:
         criterion = nn.BCEWithLogitsLoss()
-
+    # wandb_logger = Wandblogger()
+    wandb.init(job_type='Training')
     for epoch in range(epochs):
         net.train()
 
@@ -136,8 +138,9 @@ def train_net(net,
                     pseudo_batch_loss = 0
 
             #end of batch
-            wandb.log({"train/batch_loss":loss})
+            wandb_logger.log({"train/batch_loss":loss})
         wandb.log({"train/epoch_loss": mean_epoch_loss})
+
         #end of epoch
 
         tags = ['train/loss', 'validation/loss',

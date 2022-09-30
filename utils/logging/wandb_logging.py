@@ -2,6 +2,7 @@
 import wandb
 class Wandblogger:
     def __int__(self,job_type='Training'):
+        wandb.init(job_type = job_type)
         self.job_type = job_type
         self.log_dict = {}
         self.wandb, self.wandb_current_run = wandb, wandb.run
@@ -13,4 +14,5 @@ class Wandblogger:
         if self.wandb_current_run:
             wandb.log(self.log_dict)
             self.log_dict = {}
+
             

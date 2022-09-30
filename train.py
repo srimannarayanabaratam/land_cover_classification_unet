@@ -164,7 +164,7 @@ def train_net(net,
             logging.info('Validation Dice Coeff: {}'.format(val_score))
             writer.add_scalar('Dice/test', val_score, epoch + 1)
 
-        for x, tag in zip(list())
+        # for x, tag in zip(list())
 
 
         writer.add_images('images', imgs, epoch + 1)

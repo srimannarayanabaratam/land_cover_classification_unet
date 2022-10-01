@@ -15,4 +15,9 @@ class Wandblogger:
             wandb.log(self.log_dict)
             self.log_dict = {}
 
+    def end_batch(self):
+        if self.wandb_current_run:
+            wandb.log(self.log_dict)
+            self.log_dict = {}
+
             

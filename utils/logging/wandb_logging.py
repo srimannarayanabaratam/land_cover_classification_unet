@@ -2,7 +2,7 @@
 import wandb
 class Wandblogger:
     def __int__(self,job_type='Training'):
-        wandb.init(job_type = job_type)
+        wandb.init(job_type=job_type,entity="land_cover_segmentation")
         self.job_type = job_type
         self.log_dict = {}
         self.wandb, self.wandb_current_run = wandb, wandb.run

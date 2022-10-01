@@ -1,11 +1,11 @@
 
 import wandb
 class Wandblogger:
-    def __int__(self,name, job_type='Training',):
+    def __init__(self,name, job_type='Training'):
         wandb.init(job_type=job_type,
                    entity="fsdl2022_project051",
                    project='land_cover_segmentation',
-                   name = name)
+                   name=name)
         self.job_type = job_type
         self.log_dict = {}
 

@@ -80,7 +80,7 @@ def train_net(net,
     else:
         criterion = nn.BCEWithLogitsLoss()
     run_name = generate_run_name()
-    wandb_logger = Wandblogger(name=run_name)
+    wandb_logger = Wandblogger(name = run_name)
 
 
     for epoch in range(epochs):

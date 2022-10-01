@@ -1,7 +1,7 @@
 
 import wandb
 class Wandblogger:
-    def __int__(self,job_type='Training',name):
+    def __int__(self,name, job_type='Training',):
         wandb.init(job_type=job_type,
                    entity="fsdl2022_project051",
                    project='land_cover_segmentation',

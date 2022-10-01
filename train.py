@@ -17,7 +17,7 @@ from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 from diceloss import dice_coef_9cat_loss
 from classcount import classcount
-from utils.logging.wandb_logging import Wandblogger
+from utils.logging.wandb_logging import Wandblogger, generate_run_name
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -79,7 +79,8 @@ def train_net(net,
         criterion = nn.CrossEntropyLoss(weight=weights_classes)
     else:
         criterion = nn.BCEWithLogitsLoss()
-    wandb_logger = Wandblogger()
+    run_name = generate_run_name()
+    wandb_logger = Wandblogger(name = run_name)
 
 
     for epoch in range(epochs):
@@ -140,12 +141,11 @@ def train_net(net,
 
             #end of batch
             wandb_logger.log({"train/batch_loss":loss})
-        wandb_logger.log({"train/epoch_loss": mean_epoch_loss})
+            wandb_logger.end_batch()
 
         #end of epoch
 
-        tags = ['train/loss', 'validation/loss',
-                'validation/dice_coeff']
+        tags = ['train/loss', 'validation/loss']
 
         writer.add_scalar('Loss/train', epoch_loss / n_train, epoch + 1)
 
@@ -168,7 +168,9 @@ def train_net(net,
             logging.info('Validation Dice Coeff: {}'.format(val_score))
             writer.add_scalar('Dice/test', val_score, epoch + 1)
 
-        # for x, tag in zip(list())
+        for x, tag in zip(list(mean_epoch_loss) + list(val_score),tags):
+            wandb_logger.log({tag: x})
+        wandb_logger.end_epoch()
 
 
         writer.add_images('images', imgs, epoch + 1)

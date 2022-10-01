@@ -21,7 +21,7 @@ class Wandblogger:
         wandb.log(self.log_dict)
         self.log_dict = {}
 
-def generate_run_name(self):
+def generate_run_name():
     from datetime import datetime
     dt = datetime.now()
     dt_str = dt.strftime('%d%b%y_%H%M%S')

@@ -1,5 +1,6 @@
 INTERRUPTED.pth
 __pycache__/*
+data/*
 data/imgs_/*
 data/masks_/*
 runs/*

@@ -34,6 +34,8 @@ The following flags can be used while training the model.
 `-b` : Used to specify the batch size. \
 `-v` : Used to specify the percentage of the validation split (1-100). \
 `-s` : Used to specify the scale of the image to be used for training.
+`-m` : Path to the folder where the masks are stored (e.g. `/data/masks_subset/`)
+`-i` : Path to the folder where the images are stored (e.g. `/data/img_subset/`)
 
 <ins>_Example:_<ins/>
 
@@ -62,4 +64,49 @@ Making a prediction on the full test set dataset using 30 epoch model trained on
 !python predict.py -m data/checkpoints/model_ep30_full_data.pth -i data/<test_set_directory>/* -o predictions/ -s 0.2 --viz
 ```
 
+## Lambda Lab SetUp
+
+### setup Lambda Lab
+1. ``ssh`` into lambda_lab server, e.g. `ssh team_051@138.2.47.80` (password is in https://discord.com/channels/984525101678612540/1020432788542980217)
+2. clone the git repository using 
+   ```
+   git clone https://github.com/tayyabmujahid/land_cover_classification_unet.git
+   ```
+3. check out the branch of interest
+   ```
+   cd land_cover_classification_unet
+   git checkout <branchname>
+   ```
+   
+4. Build the docker image used for running the training
+   ```
+   docker build -t landcoverseg:latest -f train.Dockerfile .
+   ```
+   If multiple users are having different images, consider using a different tag instead of ``latest``
+5. [optional] download the kaggle data set using
+   ```
+   ./download_kaggle_data.sh
+   ```
+   Note: one can use the -d option to specify a path to download to.
+   
+   
+   
+
+### run training in lambda labs
+1. In case you changed the ``requirements.txt`` rebuild the container
+2. Start your docker container using:
+   ```
+   docker run -it --gpus \"device=${CUDA_VISIBLE_DEVICES}\" -v /home/team_051/land_cover_classification_unet:/workspace -v /home/team_051/land_cover_classification_unet/data:/data -e WANDB_API_KEY=xxxx landcoverseg:latest bash
+   ```
+   Make sure you set the following correctly
+   1. That the repo is mapped into the container, done by ``-v /home/team_051/land_cover_classification_unet:/workspace``
+   1. In case you do not use the data from the repository to map them in by ``-v /home/team_051/land_cover_classification_unet/data:/data``
+   1. Provide your `wandb` key to log your experiments ``-e WANDB_API_KEY=xxxx``. Optionally this can be set later within the container
+2. Now since you are connected into the container you can run the training, e.g.
+   ```
+   python3 train.py -e 100 -v 20.0 -l 1e-5 -b 2 -s 0.2 -m "/data/masks_subset/" -i "/data/img_subset/"
+   ```
+   Where ``-m`` and `-i` define the path to the masks and images within the container. Most of the time this should point to the mapped data folder
+
+__Note__: currently only the ``/workspace`` folder is mapped out from the container
 

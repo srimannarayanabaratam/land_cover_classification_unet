@@ -22,8 +22,7 @@ from utils.logging.wandb_logging import Wandblogger, generate_run_name
 torch.autograd.set_detect_anomaly(True)
 
 # Comment/Uncomment to toggle subset for training
-dir_img = 'data/img_subset/'
-dir_mask = 'data/masks_subset/'
+#  train.py
 
 ## Comment/Uncomment to toggle subset for training
 # dir_img = 'data/training_data/images'
@@ -31,7 +30,9 @@ dir_mask = 'data/masks_subset/'
 
 dir_checkpoint = 'checkpoints/'
 
-tags = ['train/loss','validation/loss']
+tags = ['train/loss', 'validation/loss']
+
+
 def train_net(net,
               device,
               epochs=5,
@@ -39,8 +40,10 @@ def train_net(net,
               lr=0.001,
               val_percent=0.1,
               save_cp=True,
-              img_scale=0.5):
-    dataset = BasicDataset(dir_img, dir_mask, img_scale)
+              img_scale=0.5,
+              image_dir='data/img_subset/',
+              masks_dir="data/masks_subset/"):
+    dataset = BasicDataset(image_dir, masks_dir, img_scale)
     n_val = int(len(dataset) * val_percent)
     n_train = len(dataset) - n_val
     train, val = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(42))
@@ -59,6 +62,8 @@ def train_net(net,
         Checkpoints:     {save_cp}
         Device:          {device.type}
         Images scaling:  {img_scale}
+        Mask folder:     {masks_dir}
+        Image folder:    {image_dir}
     ''')
 
     optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=1e-8)
@@ -80,8 +85,7 @@ def train_net(net,
     else:
         criterion = nn.BCEWithLogitsLoss()
     run_name = generate_run_name()
-    wandb_logger = Wandblogger(name = run_name)
-
+    wandb_logger = Wandblogger(name=run_name)
 
     for epoch in range(epochs):
         net.train()
@@ -118,7 +122,7 @@ def train_net(net,
                 ## Dice Loss
                 # loss=dice_coef_9cat_loss(true_masks,masks_pred)
                 # epoch_loss += loss.item()
-                mean_epoch_loss= epoch_loss / n_train
+                mean_epoch_loss = epoch_loss / n_train
                 pbar.set_postfix(**{'Epoch Loss': epoch_loss / n_train})
 
                 # convert model to full precision for optimization of weights
@@ -139,11 +143,11 @@ def train_net(net,
                     # scheduler.step()
                     pseudo_batch_loss = 0
 
-            #end of batch
-            wandb_logger.log({"train/batch_loss":loss})
+            # end of batch
+            wandb_logger.log({"train/batch_loss": loss})
             wandb_logger.end_batch()
 
-        #end of epoch
+        # end of epoch
 
         tags = ['train/loss', 'validation/loss']
 
@@ -168,10 +172,9 @@ def train_net(net,
             logging.info('Validation Dice Coeff: {}'.format(val_score))
             writer.add_scalar('Dice/test', val_score, epoch + 1)
 
-        for x, tag in zip(list(mean_epoch_loss) + list(val_score),tags):
+        for x, tag in zip([mean_epoch_loss, val_score], tags):
             wandb_logger.log({tag: x})
         wandb_logger.end_epoch()
-
 
         writer.add_images('images', imgs, epoch + 1)
         if net.n_classes == 1:
@@ -205,6 +208,10 @@ def get_args():
                         help='Downscaling factor of the images')
     parser.add_argument('-v', '--validation', dest='val', type=float, default=10.0,
                         help='Percent of the data that is used as validation (0-100)')
+    parser.add_argument('-i', '--imagesfolder', dest='images_folder', type=str, default='data/img_subset/',
+                        help='folder to the train images (must end with a /)')
+    parser.add_argument('-m', '--masksfolder', dest='masks_folder', type=str, default='data/masks_subset/',
+                        help='folder to the train masks (must end with a /)')
 
     return parser.parse_args()
 
@@ -246,7 +253,9 @@ if __name__ == '__main__':
                   lr=args.lr,
                   device=device,
                   img_scale=args.scale,
-                  val_percent=args.val / 100)
+                  val_percent=args.val / 100,
+                  image_dir=args.images_folder,
+                  masks_dir=args.masks_folder)
     except KeyboardInterrupt:
         torch.save(net.state_dict(), 'INTERRUPTED.pth')
         logging.info('Saved interrupt')

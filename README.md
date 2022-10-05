@@ -96,7 +96,7 @@ Making a prediction on the full test set dataset using 30 epoch model trained on
 1. In case you changed the ``requirements.txt`` rebuild the container
 2. Start your docker container using:
    ```
-   docker run -it --gpus \"device=${CUDA_VISIBLE_DEVICES}\" -v /home/team_051/land_cover_classification_unet:/workspace -v /home/team_051/land_cover_classification_unet/data:/data -e WANDB_API_KEY=xxxx landcoverseg:latest bash
+   docker run -it --ipc=host --gpus \"device=${CUDA_VISIBLE_DEVICES}\" -v /home/team_051/land_cover_classification_unet:/workspace -v /home/team_051/land_cover_classification_unet/data:/data -e WANDB_API_KEY=xxxx landcoverseg:latest bash
    ```
    Make sure you set the following correctly
    1. That the repo is mapped into the container, done by ``-v /home/team_051/land_cover_classification_unet:/workspace``

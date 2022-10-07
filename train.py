@@ -2,8 +2,7 @@ import argparse
 import logging
 import os
 import sys
-import wandb
-import numpy as np
+
 import torch
 import torch.nn as nn
 from torch import optim
@@ -17,7 +16,8 @@ from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 from diceloss import dice_coef_9cat_loss
 from classcount import classcount
-from utils.logging.wandb_logging import Wandblogger, generate_run_name
+from utils.wandblogging.wandb_logging import Wandblogger, generate_run_name
+from utils.checkpoint_saver import CheckpointSaver
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -29,6 +29,8 @@ torch.autograd.set_detect_anomaly(True)
 # dir_mask = 'data/training_data/masks'
 
 dir_checkpoint = 'checkpoints/'
+dir_models = 'models/'
+
 
 tags = ['train/loss', 'validation/loss']
 
@@ -85,8 +87,14 @@ def train_net(net,
     else:
         criterion = nn.BCEWithLogitsLoss()
     run_name = generate_run_name()
-    wandb_logger = Wandblogger(name=run_name)
-
+    wandb_config = {'epochs': epochs,
+                    'batch_size': batch_size,
+                    'lr': lr,
+                    'val_percent': val_percent,
+                    'training_dataset': os.path.basename(image_dir),
+                    'img_scale': img_scale}
+    wandb_logger = Wandblogger(name=run_name, config=wandb_config)
+    checkpoint_saver = CheckpointSaver(dir_checkpoint, wandb_logger)
     for epoch in range(epochs):
         net.train()
 
@@ -143,9 +151,9 @@ def train_net(net,
                     # scheduler.step()
                     pseudo_batch_loss = 0
 
-            # end of batch
-            wandb_logger.log({"train/batch_loss": loss})
-            wandb_logger.end_batch()
+                # end of batch
+                wandb_logger.log({"train/batch_loss": loss})
+                wandb_logger.end_batch()
 
         # end of epoch
 
@@ -181,16 +189,7 @@ def train_net(net,
             writer.add_images('masks/true', true_masks, epoch + 1)
             writer.add_images('masks/pred', torch.sigmoid(masks_pred) > 0.5, epoch + 1)
 
-        if (epoch + 1) % 5 == 0:
-            if save_cp:
-                try:
-                    os.mkdir(dir_checkpoint)
-                    logging.info('Created checkpoint directory')
-                except OSError:
-                    pass
-                torch.save(net.state_dict(),
-                           dir_checkpoint + f'CP_epoch{epoch + 1}.pth')
-                logging.info(f'Checkpoint {epoch + 1} saved !')
+        checkpoint_saver(net, epoch + 1, val_score)
 
 
 def get_args():
